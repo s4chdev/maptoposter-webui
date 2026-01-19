@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapToPoster — City Map Art Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #121214;
+            --bg-card: #18181b;
+            --bg-input: #27272a;
+            --border: #27272a;
+            --border-hover: #3f3f46;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #8b5cf6;
+            --accent-hover: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.3);
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        .app {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 1024px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: relative;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), #c084fc);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 22px;
+            height: 22px;
+            color: white;
+        }
+
+        .logo h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .tagline {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 32px;
+        }
+
+        /* Form */
+        .form-section {
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        input:hover, select:hover {
+            border-color: var(--border-hover);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 12px;
+        }
+
+        /* Theme Grid */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .theme-chip {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .theme-chip::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--chip-bg) 60%, var(--chip-accent));
+        }
+
+        .theme-chip:hover {
+            transform: scale(1.1);
+            z-index: 1;
+        }
+
+        .theme-chip.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .theme-chip .check {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .theme-chip.active .check {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .theme-chip .check svg {
+            width: 10px;
+            height: 10px;
+            color: white;
+        }
+
+        .selected-theme {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--bg-input);
+            border-radius: var(--radius);
+            margin-top: 12px;
+        }
+
+        .selected-theme-color {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+
+        .selected-theme-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .selected-theme-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .selected-theme-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Distance Slider */
+        .distance-display {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .distance-value {
+            font-family: 'Space Grotesk', monospace;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .distance-unit {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .slider-container {
+            position: relative;
+            padding: 8px 0;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--bg-input);
+            border-radius: 3px;
+            outline: none;
+            padding: 0;
+            border: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .distance-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
+        .distance-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1));
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .generate-btn:hover::before {
+            opacity: 1;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.35);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generate-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status */
+        .status-bar {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-bar.show {
+            display: flex;
+        }
+
+        .status-bar.processing {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .status-bar.complete {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .status-bar.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .status-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-top-color: var(--warning);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            flex-shrink: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                min-height: auto;
+            }
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .preview-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-input);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .action-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* Preview Area */
+        .preview-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .preview-placeholder-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .preview-placeholder-icon svg {
+            width: 36px;
+            height: 36px;
+            color: var(--text-muted);
+        }
+
+        .preview-placeholder h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .preview-placeholder p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .preview-loading {
+            text-align: center;
+        }
+
+        .preview-loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        .preview-loading p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* Gallery */
+        .gallery-section {
+            margin-top: 32px;
+        }
+
+        .gallery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .gallery-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .gallery-item {
+            aspect-ratio: 3/4;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Footer */
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .footer-text a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                        <line x1="9" y1="3" x2="9" y2="18"/>
+                        <line x1="15" y1="6" x2="15" y2="21"/>
+                    </svg>
+                </div>
+                <h1>MapToPoster</h1>
+            </div>
+            <p class="tagline">Create beautiful city map art</p>
+
+            <div class="form-section">
+                <form id="posterForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" placeholder="Paris" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <input type="text" id="country" placeholder="France" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Theme</label>
+                        <div class="theme-grid" id="themeGrid">
+                            {% for theme in themes %}
+                            <div class="theme-chip {% if loop.first %}active{% endif %}" 
+                                 data-theme="{{ theme.id }}" 
+                                 data-name="{{ theme.name }}"
+                                 data-desc="{{ theme.description }}"
+                                 data-bg="{{ theme.bg }}"
+                                 data-text="{{ theme.text }}"
+                                 style="--chip-bg: {{ theme.bg }}; --chip-accent: {{ theme.text }};"
+                                 title="{{ theme.name }}">
+                                <span class="check">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="selected-theme" id="selectedTheme">
+                            <div class="selected-theme-color" id="themeColorPreview"></div>
+                            <div class="selected-theme-info">
+                                <div class="selected-theme-name" id="themeName"></div>
+                                <div class="selected-theme-desc" id="themeDesc"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Map Radius</label>
+                        <div class="distance-display">
+                            <span class="distance-value" id="distanceValue">12</span>
+                            <span class="distance-unit">km</span>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" id="distance" min="3" max="30" value="12" step="1">
+                        </div>
+                        <div class="distance-labels">
+                            <span class="distance-label">Neighborhood</span>
+                            <span class="distance-label">City</span>
+                            <span class="distance-label">Metro</span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="selectedThemeId" value="{% if themes %}{{ themes[0].id }}{% endif %}">
+
+                    <button type="submit" class="generate-btn" id="generateBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Generate Poster
+                    </button>
+                </form>
+
+                <div class="status-bar" id="status">
+                    <div class="status-spinner"></div>
+                    <span id="statusText">Processing...</span>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <p class="footer-text">Data © <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors</p>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="preview-header">
+                <h2 class="preview-title">Preview</h2>
+                <div class="preview-actions" id="previewActions" style="display: none;">
+                    <a href="#" class="action-btn primary" id="downloadBtn" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download
+                    </a>
+                </div>
+            </div>
+
+            <div class="preview-container" id="previewContainer">
+                <div class="preview-placeholder" id="placeholder">
+                    <div class="preview-placeholder-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="9" cy="9" r="2"/>
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                        </svg>
+                    </div>
+                    <h3>No poster yet</h3>
+                    <p>Enter a city and country, pick a theme, then hit generate to create your map art.</p>
+                </div>
+            </div>
+
+            <div class="gallery-section" id="gallerySection" style="display: none;">
+                <div class="gallery-header">
+                    <h3 class="gallery-title">Recent Posters</h3>
+                </div>
+                <div class="gallery-grid" id="galleryGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Elements
+        const form = document.getElementById('posterForm');
+        const generateBtn = document.getElementById('generateBtn');
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const previewContainer = document.getElementById('previewContainer');
+        const placeholder = document.getElementById('placeholder');
+        const previewActions = document.getElementById('previewActions');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const distanceSlider = document.getElementById('distance');
+        const distanceValue = document.getElementById('distanceValue');
+        const themeGrid = document.getElementById('themeGrid');
+        const selectedThemeId = document.getElementById('selectedThemeId');
+
+        // Theme selection
+        function updateThemePreview(chip) {
+            const bg = chip.dataset.bg;
+            const name = chip.dataset.name;
+            const desc = chip.dataset.desc;
+            
+            document.getElementById('themeColorPreview').style.background = bg;
+            document.getElementById('themeName').textContent = name;
+            document.getElementById('themeDesc').textContent = desc || 'Custom color palette';
+        }
+
+        themeGrid.addEventListener('click', (e) => {
+            const chip = e.target.closest('.theme-chip');
+            if (!chip) return;
+            
+            document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedThemeId.value = chip.dataset.theme;
+            updateThemePreview(chip);
+        });
+
+        // Initialize first theme
+        const firstChip = document.querySelector('.theme-chip.active');
+        if (firstChip) updateThemePreview(firstChip);
+
+        // Distance slider
+        distanceSlider.addEventListener('input', () => {
+            distanceValue.textContent = distanceSlider.value;
+        });
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const city = document.getElementById('city').value.trim();
+            const country = document.getElementById('country').value.trim();
+            const theme = selectedThemeId.value;
+            const distance = parseInt(distanceSlider.value) * 1000;
+            
+            if (!city || !country) return;
+            
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<div class="btn-spinner"></div> Generating...';
+            
+            status.className = 'status-bar show processing';
+            statusText.textContent = 'Starting generation...';
+            
+            placeholder.innerHTML = `
+                <div class="preview-loading">
+                    <div class="preview-loading-spinner"></div>
+                    <p>Creating your poster...</p>
+                </div>
+            `;
+            previewActions.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ city, country, theme, distance })
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
+                pollStatus(data.job_id);
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        async function pollStatus(jobId) {
+            try {
+                const response = await fetch(`/api/status/${jobId}`);
+                const data = await response.json();
+                
+                statusText.textContent = data.message;
+                
+                if (data.status === 'complete') {
+                    status.className = 'status-bar show complete';
+                    statusText.textContent = '✓ Poster ready!';
+                    
+                    placeholder.innerHTML = `<img src="/posters/${data.filename}" alt="Generated poster" class="preview-image">`;
+                    downloadBtn.href = `/posters/${data.filename}`;
+                    previewActions.style.display = 'flex';
+                    
+                    resetButton();
+                    loadRecentPosters();
+                    
+                    setTimeout(() => {
+                        status.classList.remove('show');
+                    }, 3000);
+                    
+                } else if (data.status === 'error') {
+                    showError(data.message);
+                } else {
+                    setTimeout(() => pollStatus(jobId), 800);
+                }
+            } catch (error) {
+                showError('Connection lost');
+            }
+        }
+
+        function showError(message) {
+            status.className = 'status-bar show error';
+            statusText.textContent = '✗ ' + message;
+            resetButton();
+            
+            placeholder.innerHTML = `
+                <div class="preview-placeholder">
+                    <div class="preview-placeholder-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                    </div>
+                    <h3>Generation failed</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function resetButton() {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Generate Poster
+            `;
+        }
+
+        async function loadRecentPosters() {
+            try {
+                const response = await fetch('/api/posters');
+                const posters = await response.json();
+                
+                if (posters.length > 0) {
+                    document.getElementById('gallerySection').style.display = 'block';
+                    document.getElementById('galleryGrid').innerHTML = posters.slice(0, 8).map(p => `
+                        <div class="gallery-item" onclick="showPoster('${p.url}')">
+                            <img src="${p.url}" alt="${p.filename}" loading="lazy">
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {}
+        }
+
+        function showPoster(url) {
+            placeholder.innerHTML = `<img src="${url}" alt="Poster" class="preview-image">`;
+            downloadBtn.href = url;
+            previewActions.style.display = 'flex';
+        }
+
+        // Load recent on page load
+        loadRecentPosters();
+    </script>
+</body>
+</html>
