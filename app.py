@@ -19,6 +19,10 @@ app.config['SECRET_KEY'] = 'maptoposter-secret-key'
 THEMES_DIR = "themes"
 FONTS_DIR = "fonts"
 POSTERS_DIR = "posters"
+THUMBNAILS_DIR = "thumbnails"
+
+# Ensure thumbnails directory exists
+os.makedirs(THUMBNAILS_DIR, exist_ok=True)
 
 # Store generation status
 generation_status = {}
@@ -185,11 +189,8 @@ def generate_poster_async(job_id, city, country, theme, distance):
         create_gradient_fade(ax, THEME['gradient_color'], location='bottom', zorder=10)
         create_gradient_fade(ax, THEME['gradient_color'], location='top', zorder=10)
         
-        # Typography
-        if os.path.exists(fonts['modern']):
-            font_main = FontProperties(fname=fonts['modern'], size=60)
-        else:
-            font_main = FontProperties(fname=fonts['bold'], size=60)
+        # Typography - Always use modern font for city
+        font_main = FontProperties(fname=fonts['modern'], size=60)
         font_sub = FontProperties(fname=fonts['light'], size=22)
         font_coords = FontProperties(fname=fonts['regular'], size=14)
         font_attr = FontProperties(fname=fonts['light'], size=8)
@@ -280,6 +281,28 @@ def serve_poster(filename):
     """Serve generated poster."""
     return send_from_directory(POSTERS_DIR, filename)
 
+@app.route('/thumbnails/<filename>')
+def serve_thumbnail(filename):
+    """Serve thumbnail image."""
+    thumb_path = os.path.join(THUMBNAILS_DIR, filename)
+    poster_path = os.path.join(POSTERS_DIR, filename)
+    
+    # Generate thumbnail if it doesn't exist
+    if not os.path.exists(thumb_path) and os.path.exists(poster_path):
+        try:
+            from PIL import Image
+            with Image.open(poster_path) as img:
+                # Create thumbnail (max 200px width, maintain aspect ratio)
+                img.thumbnail((200, 400), Image.Resampling.LANCZOS)
+                img.save(thumb_path, 'PNG', optimize=True)
+        except Exception as e:
+            # If thumbnail generation fails, serve original
+            return send_from_directory(POSTERS_DIR, filename)
+    
+    if os.path.exists(thumb_path):
+        return send_from_directory(THUMBNAILS_DIR, filename)
+    return send_from_directory(POSTERS_DIR, filename)
+
 @app.route('/api/posters')
 def api_posters():
     """List generated posters."""
@@ -289,9 +312,10 @@ def api_posters():
             if f.endswith('.png'):
                 posters.append({
                     'filename': f,
-                    'url': f'/posters/{f}'
+                    'url': f'/posters/{f}',
+                    'thumbnail': f'/thumbnails/{f}'
                 })
-    return jsonify(posters[:20])  # Return last 20
+    return jsonify(posters[:50])  # Return last 50
 
 if __name__ == '__main__':
     print("=" * 50)

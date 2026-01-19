@@ -187,103 +187,6 @@
             padding: 12px;
         }
 
-        /* Theme Grid */
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .theme-chip {
-            aspect-ratio: 1;
-            border-radius: 8px;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-            overflow: hidden;
-        }
-
-        .theme-chip::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, var(--chip-bg) 60%, var(--chip-accent));
-        }
-
-        .theme-chip:hover {
-            transform: scale(1.1);
-            z-index: 1;
-        }
-
-        .theme-chip.active {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-glow);
-        }
-
-        .theme-chip .check {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            width: 18px;
-            height: 18px;
-            background: var(--accent);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease;
-        }
-
-        .theme-chip.active .check {
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .theme-chip .check svg {
-            width: 10px;
-            height: 10px;
-            color: white;
-        }
-
-        .selected-theme {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: var(--bg-input);
-            border-radius: var(--radius);
-            margin-top: 12px;
-        }
-
-        .selected-theme-color {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            flex-shrink: 0;
-            border: 1px solid var(--border);
-        }
-
-        .selected-theme-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .selected-theme-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .selected-theme-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
         /* Distance Slider */
         .distance-display {
             display: flex;
@@ -477,6 +380,19 @@
             background: var(--bg-primary);
         }
 
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 24px;
+            flex: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 1024px) {
             .main-content {
                 min-height: auto;
@@ -593,8 +509,8 @@
         }
 
         .preview-image {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 500px;
+            max-height: 70vh;
             object-fit: contain;
             border-radius: 8px;
         }
@@ -620,7 +536,25 @@
 
         /* Gallery */
         .gallery-section {
-            margin-top: 32px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            padding: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .gallery-section::-webkit-scrollbar {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            .gallery-section {
+                max-height: none;
+            }
         }
 
         .gallery-header {
@@ -639,8 +573,14 @@
 
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+        }
+
+        @media (max-width: 1200px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
         }
 
         .gallery-item {
@@ -650,19 +590,132 @@
             overflow: hidden;
             cursor: pointer;
             transition: all 0.2s ease;
-            border: 1px solid var(--border);
+            border: 2px solid transparent;
         }
 
         .gallery-item:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--border-hover);
+            border-color: var(--accent);
         }
 
         .gallery-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .more-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .more-btn:hover {
+            background: var(--bg-card);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .more-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-card);
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .modal-close svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .modal-grid {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 16px;
+            overflow-y: auto;
         }
 
         /* Footer */
@@ -707,42 +760,65 @@
                 <form id="posterForm">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="city">City</label>
-                            <input type="text" id="city" placeholder="Paris" required>
+                            <label for="country">Country</label>
+                            <select id="country" required>
+                                <option value="">Select a country</option>
+                                <option value="Australia">Australia</option>
+                                <option value="Austria">Austria</option>
+                                <option value="Belgium">Belgium</option>
+                                <option value="Brazil">Brazil</option>
+                                <option value="Canada">Canada</option>
+                                <option value="China">China</option>
+                                <option value="Czech Republic">Czech Republic</option>
+                                <option value="Denmark">Denmark</option>
+                                <option value="Egypt">Egypt</option>
+                                <option value="Finland">Finland</option>
+                                <option value="France">France</option>
+                                <option value="Germany">Germany</option>
+                                <option value="Greece">Greece</option>
+                                <option value="Hungary">Hungary</option>
+                                <option value="India">India</option>
+                                <option value="Indonesia">Indonesia</option>
+                                <option value="Ireland">Ireland</option>
+                                <option value="Israel">Israel</option>
+                                <option value="Italy">Italy</option>
+                                <option value="Japan">Japan</option>
+                                <option value="Malaysia">Malaysia</option>
+                                <option value="Mexico">Mexico</option>
+                                <option value="Morocco">Morocco</option>
+                                <option value="Netherlands">Netherlands</option>
+                                <option value="New Zealand">New Zealand</option>
+                                <option value="Norway">Norway</option>
+                                <option value="Poland">Poland</option>
+                                <option value="Portugal">Portugal</option>
+                                <option value="Russia">Russia</option>
+                                <option value="Singapore">Singapore</option>
+                                <option value="South Africa">South Africa</option>
+                                <option value="South Korea">South Korea</option>
+                                <option value="Spain">Spain</option>
+                                <option value="Sweden">Sweden</option>
+                                <option value="Switzerland">Switzerland</option>
+                                <option value="Thailand">Thailand</option>
+                                <option value="Turkey">Turkey</option>
+                                <option value="UAE">UAE</option>
+                                <option value="UK">UK</option>
+                                <option value="USA">USA</option>
+                                <option value="Vietnam">Vietnam</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label for="country">Country</label>
-                            <input type="text" id="country" placeholder="France" required>
+                            <label for="city">City</label>
+                            <input type="text" id="city" placeholder="Enter any city" required>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Theme</label>
-                        <div class="theme-grid" id="themeGrid">
+                        <label for="themeSelect">Theme</label>
+                        <select id="themeSelect" required>
                             {% for theme in themes %}
-                            <div class="theme-chip {% if loop.first %}active{% endif %}" 
-                                 data-theme="{{ theme.id }}" 
-                                 data-name="{{ theme.name }}"
-                                 data-desc="{{ theme.description }}"
-                                 data-bg="{{ theme.bg }}"
-                                 data-text="{{ theme.text }}"
-                                 style="--chip-bg: {{ theme.bg }}; --chip-accent: {{ theme.text }};"
-                                 title="{{ theme.name }}">
-                                <span class="check">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"/>
-                                    </svg>
-                                </span>
-                            </div>
+                            <option value="{{ theme.id }}" {% if loop.first %}selected{% endif %}>{{ theme.name }}</option>
                             {% endfor %}
-                        </div>
-                        <div class="selected-theme" id="selectedTheme">
-                            <div class="selected-theme-color" id="themeColorPreview"></div>
-                            <div class="selected-theme-info">
-                                <div class="selected-theme-name" id="themeName"></div>
-                                <div class="selected-theme-desc" id="themeDesc"></div>
-                            </div>
-                        </div>
+                        </select>
                     </div>
 
                     <div class="form-group">
@@ -760,8 +836,6 @@
                             <span class="distance-label">Metro</span>
                         </div>
                     </div>
-
-                    <input type="hidden" id="selectedThemeId" value="{% if themes %}{{ themes[0].id }}{% endif %}">
 
                     <button type="submit" class="generate-btn" id="generateBtn">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -797,27 +871,51 @@
                 </div>
             </div>
 
-            <div class="preview-container" id="previewContainer">
-                <div class="preview-placeholder" id="placeholder">
-                    <div class="preview-placeholder-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <circle cx="9" cy="9" r="2"/>
-                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                        </svg>
+            <div class="content-area">
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-placeholder" id="placeholder">
+                        <div class="preview-placeholder-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="9" cy="9" r="2"/>
+                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                            </svg>
+                        </div>
+                        <h3>No poster yet</h3>
+                        <p>Enter a city and country, pick a theme, then hit generate to create your map art.</p>
                     </div>
-                    <h3>No poster yet</h3>
-                    <p>Enter a city and country, pick a theme, then hit generate to create your map art.</p>
                 </div>
-            </div>
 
-            <div class="gallery-section" id="gallerySection" style="display: none;">
-                <div class="gallery-header">
-                    <h3 class="gallery-title">Recent Posters</h3>
+                <div class="gallery-section" id="gallerySection" style="display: none;">
+                    <div class="gallery-header">
+                        <h3 class="gallery-title">Recent Posters</h3>
+                    </div>
+                    <div class="gallery-grid" id="galleryGrid"></div>
+                    <button class="more-btn" id="moreBtn" style="display: none;" onclick="openGalleryModal()">
+                        View All
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
                 </div>
-                <div class="gallery-grid" id="galleryGrid"></div>
             </div>
         </main>
+    </div>
+
+    <!-- Gallery Modal -->
+    <div class="modal-overlay" id="galleryModal" onclick="closeGalleryModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">All Posters</h2>
+                <button class="modal-close" onclick="closeGalleryModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-grid" id="modalGrid"></div>
+        </div>
     </div>
 
     <script>
@@ -832,33 +930,7 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const distanceSlider = document.getElementById('distance');
         const distanceValue = document.getElementById('distanceValue');
-        const themeGrid = document.getElementById('themeGrid');
-        const selectedThemeId = document.getElementById('selectedThemeId');
-
-        // Theme selection
-        function updateThemePreview(chip) {
-            const bg = chip.dataset.bg;
-            const name = chip.dataset.name;
-            const desc = chip.dataset.desc;
-            
-            document.getElementById('themeColorPreview').style.background = bg;
-            document.getElementById('themeName').textContent = name;
-            document.getElementById('themeDesc').textContent = desc || 'Custom color palette';
-        }
-
-        themeGrid.addEventListener('click', (e) => {
-            const chip = e.target.closest('.theme-chip');
-            if (!chip) return;
-            
-            document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            selectedThemeId.value = chip.dataset.theme;
-            updateThemePreview(chip);
-        });
-
-        // Initialize first theme
-        const firstChip = document.querySelector('.theme-chip.active');
-        if (firstChip) updateThemePreview(firstChip);
+        const themeSelect = document.getElementById('themeSelect');
 
         // Distance slider
         distanceSlider.addEventListener('input', () => {
@@ -870,8 +942,8 @@
             e.preventDefault();
             
             const city = document.getElementById('city').value.trim();
-            const country = document.getElementById('country').value.trim();
-            const theme = selectedThemeId.value;
+            const country = document.getElementById('country').value;
+            const theme = themeSelect.value;
             const distance = parseInt(distanceSlider.value) * 1000;
             
             if (!city || !country) return;
@@ -968,18 +1040,24 @@
             `;
         }
 
+        let allPosters = [];
+
         async function loadRecentPosters() {
             try {
                 const response = await fetch('/api/posters');
                 const posters = await response.json();
+                allPosters = posters;
                 
                 if (posters.length > 0) {
                     document.getElementById('gallerySection').style.display = 'block';
                     document.getElementById('galleryGrid').innerHTML = posters.slice(0, 8).map(p => `
                         <div class="gallery-item" onclick="showPoster('${p.url}')">
-                            <img src="${p.url}" alt="${p.filename}" loading="lazy">
+                            <img src="${p.thumbnail}" alt="${p.filename}" loading="lazy">
                         </div>
                     `).join('');
+                    
+                    // Show More button if there are more than 8 posters
+                    document.getElementById('moreBtn').style.display = posters.length > 8 ? 'flex' : 'none';
                 }
             } catch (e) {}
         }
@@ -988,7 +1066,34 @@
             placeholder.innerHTML = `<img src="${url}" alt="Poster" class="preview-image">`;
             downloadBtn.href = url;
             previewActions.style.display = 'flex';
+            closeGalleryModal();
         }
+
+        function openGalleryModal() {
+            const modal = document.getElementById('galleryModal');
+            const modalGrid = document.getElementById('modalGrid');
+            
+            modalGrid.innerHTML = allPosters.map(p => `
+                <div class="gallery-item" onclick="showPoster('${p.url}')">
+                    <img src="${p.thumbnail}" alt="${p.filename}" loading="lazy">
+                </div>
+            `).join('');
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeGalleryModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('galleryModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeGalleryModal();
+        });
 
         // Load recent on page load
         loadRecentPosters();
